@@ -76,6 +76,40 @@ You can optionally install GPD with `sudo make install` so that it can be used b
 
 If building the package does not work, try to modify the compiler flags, `CMAKE_CXX_FLAGS`, in the file CMakeLists.txt.
 
+### Python package build
+
+The Python bindings are packaged as a `gpd` distribution that exposes the
+`gpd.core` namespace submodule. The package uses scikit-build-core and nanobind,
+and it currently targets the Eigen/LeNet backend only.
+
+Native build requirements are still required before building the wheel:
+
+1. PCL 1.9 or newer
+2. Eigen 3.0 or newer
+3. OpenCV 3.4 or newer
+
+Build a local wheel with:
+
+   ```
+   python -m pip install build
+   python -m build --wheel
+   python -m pip install dist/gpd-*.whl
+   ```
+
+Import the core API with:
+
+   ```python
+   from gpd.core import Cloud, GraspDetector
+
+   cloud = Cloud(points, view_points=None, normals=None, sample_indices=None)
+   detector = GraspDetector.from_preset("eigen")
+   grasps = detector.detect_grasps(cloud)
+   ```
+
+The first binding version does not publish wheels to PyPI and does not expose
+Caffe or OpenVINO presets from Python. Advanced local builds can still construct
+`GraspDetector` with an explicit config path.
+
 <a name="pcd"></a>
 ## 3) Generate Grasps for a Point Cloud File
 

@@ -2,8 +2,20 @@ cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 project(gpd)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 14)
+option(BUILD_PYTHON_BINDINGS "build Python bindings" OFF)
 
 # Eigen library
+if(NOT EIGEN3_INCLUDE_DIR)
+  find_package(Eigen3 CONFIG QUIET)
+  if(TARGET Eigen3::Eigen)
+    get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+  endif()
+endif()
+find_path(EIGEN3_INCLUDE_DIR Eigen/Dense
+  PATHS
+    "$ENV{CONDA_PREFIX}/include/eigen3"
+    /usr/include/eigen3
+)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
 # PCL
@@ -26,7 +38,11 @@ find_package(OpenCV REQUIRED)
 # set(CMAKE_CXX_FLAGS "-frename-registers -Ofast -march=native -fopenmp -fPIC -Wno-deprecated -Wenum-compare") # no improvement
 
 #set(CMAKE_CXX_FLAGS "-fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++17")
-set(CMAKE_CXX_FLAGS "-O3 -march=native -mtune=intel -msse4.2 -mavx2 -mfma -flto -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++17")
+if(BUILD_PYTHON_BINDINGS STREQUAL "ON")
+  set(CMAKE_CXX_FLAGS "-O3 -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++17")
+else()
+  set(CMAKE_CXX_FLAGS "-O3 -march=native -mtune=intel -msse4.2 -mavx2 -mfma -flto -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++17")
+endif()
 
 ## Specify additional locations of header files
 include_directories(include ${PCL_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
